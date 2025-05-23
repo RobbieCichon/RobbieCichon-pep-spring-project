@@ -1,11 +1,13 @@
 package com.example.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Resource;
 
 import java.util.ArrayList;
 
+import com.example.repository.AccountRepository;
 import com.example.repository.MessageRepository;
 import com.example.entity.Message;
 import com.example.exception.ResourceNotFoundException;
@@ -16,31 +18,38 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MessageService {
-    MessageRepository messageRepository;
-
-    private List<Message> messageList = new ArrayList<>();
+    private MessageRepository messageRepository;
+    private AccountRepository accountRepository;
 
     @Autowired
-    public MessageService(MessageRepository messageRepository){
+    public MessageService(MessageRepository messageRepository, AccountRepository accountRepository){
         messageRepository = this.messageRepository;
+        accountRepository = this.accountRepository;
     }
 
     public List<Message> getMessageList(){
-        return messageList;
+        return (List<Message>) messageRepository.findAll();
     }
 
     public Message getMessageById(Integer message_id){
-        for (Message message:messageList){
-            if (message.getMessageId().equals(message_id)){
-                return message;
+        Optional<Message> optionalMessage = messageRepository.findById(message_id);
+        if (optionalMessage.isPresent()){
+
+            Message message = optionalMessage.get();
+            return message;
             }
+        else{
+            Message message = new Message();
+            return message;
         }
-        Message message = new Message();
-        return message;
     }
 
     public Message addMessage(Message message) throws ResourceNotFoundException{
-        messageList.add(message);
+        if (message.getMessageText().length() >= 255 || message.getMessageText() == ""){
+            if (accountRepository.existsById(message.getPostedBy())){
+                messageRepository.save(message);
+            }
+        }
         
         return message;
     }
@@ -57,26 +66,23 @@ public class MessageService {
     }
 
     public Message deleteMessage(Integer message_id){
-        List<Message> messages = getMessageList();
-        for (Message message:messages){
-            if (message.getMessageId().equals(message_id)){
-                messageList.remove(message);
-                return message;
-            }
+        Optional<Message> optionalMessage = messageRepository.findById(message_id);
+        if(optionalMessage.isPresent()){
+            Message message = optionalMessage.get();
+            messageRepository.deleteById(message_id);
+            return message;
         }
-        Message message = new Message();
-        return message;
+        else{
+            Message message = new Message();
+            return message;
+        }
     }
 
     public Message patchMessage(Integer message_id, String message_contents)throws ResourceNotFoundException{
-        List<Message> messages = getMessageList();
-        for (Message message:messages){
-            if (message.getMessageId().equals(message_id)){
-                message.setMessageText(message_contents);
-                return message;
-            }
-        }
-        throw new ResourceNotFoundException(message_id + " was not found. Please try another message ID.");
+        Message message = messageRepository.findById(message_id)
+        .orElseThrow(() -> new ResourceNotFoundException(message_id + " was not found. Please try another message ID."));
+        message.setMessageText(message_contents);
+        return message;
     }
 
 }

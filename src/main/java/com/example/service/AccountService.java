@@ -15,9 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AccountService {
-    AccountRepository accountRepository;
-
-    private List<Account> accountList = new ArrayList<>();
+    private AccountRepository accountRepository;
+    
 
     @Autowired
     public AccountService(AccountRepository accountRepository){
@@ -40,7 +39,7 @@ public class AccountService {
     }
 
     public List<Account> getAccountList(){
-        return accountList;
+        return (List<Account>) accountRepository.findAll();
     }
 
     public Account loginAccount(Account account) throws AuthenticationException{
@@ -49,15 +48,12 @@ public class AccountService {
                 return account;
             }
         }
+
         throw new AuthenticationException("Username and password credentials are invalid");
     }
 
     public Account getAccountById(Integer account_id) throws ResourceNotFoundException{
-        for (Account account:accountList){
-            if (account.getAccountId().equals(account_id)){
-                return account;
-            }
-        }
-        throw new ResourceNotFoundException(account_id + " was not found. Please try another account ID.");
+        return accountRepository.findById(account_id)
+        .orElseThrow(() -> new ResourceNotFoundException(account_id + " was not found. Please try another account ID."));
     }
 }

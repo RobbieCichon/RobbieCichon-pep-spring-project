@@ -56,24 +56,24 @@ public class SocialMediaController {
     @GetMapping("/messages")
     public @ResponseBody ResponseEntity<List<Message>> getAllMessages(){
         List<Message> allMessages = messageService.getMessageList();
-        return new ResponseEntity<>(allMessages, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(allMessages);
     }
  
     @DeleteMapping("/messages/{message_id}")
-    public @ResponseBody ResponseEntity<Message> deleteMessage(@RequestParam Integer message_id){
+    public @ResponseBody ResponseEntity<Message> deleteMessage(@PathVariable Integer message_id){
         Message deletedMessage = messageService.deleteMessage(message_id);
         return new ResponseEntity<>(deletedMessage, HttpStatus.OK);
     }
 
     @PatchMapping("messages/{message_id}")
-    public @ResponseBody ResponseEntity<Message> updateMessage(@RequestParam Integer message_id, @RequestBody String message_contents){
-        Message updatedMessage = messageService.patchMessage(message_id, message_contents);
+    public @ResponseBody ResponseEntity<Message> patchMessage(@PathVariable Integer message_id, @RequestBody String messageText){
+        Message updatedMessage = messageService.patchMessage(message_id, messageText);
         return new ResponseEntity<>(updatedMessage, HttpStatus.OK);
     }
 
     @GetMapping("accounts/{account_id}/messages")
-    public @ResponseBody ResponseEntity<List<Message>> getMessagesById(@RequestParam Integer account_id){
+    public @ResponseBody ResponseEntity<List<Message>> getMessagesById(@PathVariable Integer account_id){
         List<Message> messagesOfAccount = messageService.getMessagesById(account_id);
-        return new ResponseEntity<>(messagesOfAccount, HttpStatus.OK);
+        return  ResponseEntity.status(HttpStatus.OK).body(messagesOfAccount);
     }
 }

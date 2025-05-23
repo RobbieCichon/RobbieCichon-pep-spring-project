@@ -2,9 +2,12 @@ package com.example.controller;
 
 import com.example.entity.Account;
 import com.example.entity.Message;
+import com.example.exception.DuplicateUsernameException;
+import com.example.exception.ResourceNotFoundException;
 import com.example.service.AccountService;
 import com.example.service.MessageService;
 
+import org.apache.tomcat.util.file.ConfigurationSource.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
@@ -36,44 +39,56 @@ public class SocialMediaController {
     }
 
     @PostMapping("/register")
-    public @ResponseBody ResponseEntity<Account> postRegisterAccount(@RequestBody Account account)throws AuthenticationException{
+    public ResponseEntity<Account> postRegisterAccount(@RequestBody Account account){
         Account newAccount = accountService.registerAccount(account);
         return new ResponseEntity<>(newAccount, HttpStatus.OK);
     }
 
     @PostMapping("/login")
-    public @ResponseBody ResponseEntity<Account> postLoginAccount(@RequestBody Account account) throws AuthenticationException{
+    public ResponseEntity<Account> postLoginAccount(@RequestBody Account account) throws AuthenticationException{
         Account accessedAccount = accountService.loginAccount(account);
         return new ResponseEntity<>(accessedAccount, HttpStatus.OK);
     }
 
     @PostMapping("/messages")
-    public @ResponseBody ResponseEntity<Message> postMessage(@RequestBody Message message){
+    public ResponseEntity<Message> postMessage(@RequestBody Message message){
         Message newMessage = messageService.addMessage(message);
         return new ResponseEntity<>(newMessage, HttpStatus.OK);
     }
 
     @GetMapping("/messages")
-    public @ResponseBody ResponseEntity<List<Message>> getAllMessages(){
+    public ResponseEntity<List<Message>> getAllMessages(){
         List<Message> allMessages = messageService.getMessageList();
         return ResponseEntity.status(HttpStatus.OK).body(allMessages);
     }
  
     @DeleteMapping("/messages/{message_id}")
-    public @ResponseBody ResponseEntity<Message> deleteMessage(@PathVariable Integer message_id){
+    public ResponseEntity<Message> deleteMessage(@PathVariable Integer message_id){
         Message deletedMessage = messageService.deleteMessage(message_id);
         return new ResponseEntity<>(deletedMessage, HttpStatus.OK);
     }
 
     @PatchMapping("messages/{message_id}")
-    public @ResponseBody ResponseEntity<Message> patchMessage(@PathVariable Integer message_id, @RequestBody String messageText){
+    public ResponseEntity<Message> patchMessage(@PathVariable Integer message_id, @RequestBody String messageText){
         Message updatedMessage = messageService.patchMessage(message_id, messageText);
         return new ResponseEntity<>(updatedMessage, HttpStatus.OK);
     }
 
     @GetMapping("accounts/{account_id}/messages")
-    public @ResponseBody ResponseEntity<List<Message>> getMessagesById(@PathVariable Integer account_id){
+    public ResponseEntity<List<Message>> getMessagesById(@PathVariable Integer account_id){
         List<Message> messagesOfAccount = messageService.getMessagesById(account_id);
         return  ResponseEntity.status(HttpStatus.OK).body(messagesOfAccount);
     }
+
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public String handleUnauthorized(AuthenticationException ex){ return ex.getMessage();}
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleNoSuchResource(ResourceNotFoundException ex){ return ex.getMessage();}
+
+    @ExceptionHandler(DuplicateUsernameException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String handleDuplicate(DuplicateUsernameException ex){ return ex.getMessage();}
 }

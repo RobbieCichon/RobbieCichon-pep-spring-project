@@ -7,7 +7,7 @@ import javax.naming.AuthenticationException;
 import java.util.ArrayList;
 import com.example.repository.AccountRepository;
 import com.example.entity.Account;
-import com.example.exception.ResourceNotFoundException;
+import com.example.exception.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,16 +24,16 @@ public class AccountService {
         accountRepository = this.accountRepository;
     }
 
-    public Account registerAccount(Account account) throws AuthenticationException, ResourceNotFoundException{
+    public Account registerAccount(Account account) throws DuplicateUsernameException, ResourceNotFoundException{
         if (account.getUsername().length() > 0 && account.getPassword().length() > 3){
             List<Account> accounts = getAccountList();
             for (Account currentAccounts:accounts){
                 if (currentAccounts.getUsername().equals(account.getUsername())){
-                    throw new ResourceNotFoundException(account.getUsername() + " already exists, try a different one.");
+                    throw new DuplicateUsernameException(account.getUsername() + " already exists, try a different one.");
                 }
             }
         }
-        else throw new AuthenticationException("Invalid username and/or password specifications, try a different one.");
+        else throw new ResourceNotFoundException("Invalid username and/or password specifications, try a different one.");
 
         accountList.add(account);
         return account;

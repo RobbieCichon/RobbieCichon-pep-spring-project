@@ -29,16 +29,17 @@ public class MessageService {
         return messageList;
     }
 
-    public Message getMessageById(Integer message_id) throws ResourceNotFoundException{
+    public Message getMessageById(Integer message_id){
         for (Message message:messageList){
             if (message.getMessageId().equals(message_id)){
                 return message;
             }
         }
-        throw new ResourceNotFoundException(message_id + " was not found. Please try another account ID.");
+        Message message = new Message();
+        return message;
     }
 
-    public Message addMessage(Message message){
+    public Message addMessage(Message message) throws ResourceNotFoundException{
         messageList.add(message);
         
         return message;
@@ -55,7 +56,7 @@ public class MessageService {
         return matchMessages;
     }
 
-    public Message deleteMessage(Integer message_id)throws ResourceNotFoundException{
+    public Message deleteMessage(Integer message_id){
         List<Message> messages = getMessageList();
         for (Message message:messages){
             if (message.getMessageId().equals(message_id)){
@@ -63,7 +64,8 @@ public class MessageService {
                 return message;
             }
         }
-        throw new ResourceNotFoundException(message_id + " was not found. Please try another message ID.");
+        Message message = new Message();
+        return message;
     }
 
     public Message patchMessage(Integer message_id, String message_contents)throws ResourceNotFoundException{

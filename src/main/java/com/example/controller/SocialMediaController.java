@@ -14,10 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.ArrayList;
 
 import javax.naming.AuthenticationException;
-
-import java.util.ArrayList;
 
 
 /**
@@ -61,6 +61,16 @@ public class SocialMediaController {
         List<Message> allMessages = messageService.getMessageList();
         return ResponseEntity.status(HttpStatus.OK).body(allMessages);
     }
+
+    @GetMapping("/messages/{message_id}")
+    public ResponseEntity<Message> getMessageById(@PathVariable Integer message_id){
+        Optional<Message> optionalMessage = messageService.getMessageById(message_id);
+        if(optionalMessage.isPresent()){
+            Message foundMessage = optionalMessage.get();
+            return new ResponseEntity<>(foundMessage, HttpStatus.OK);
+        }
+        else return new ResponseEntity<>(HttpStatus.OK);
+    }
  
     @DeleteMapping("/messages/{message_id}")
     public ResponseEntity<Integer> deleteMessage(@PathVariable Integer message_id){
@@ -74,15 +84,15 @@ public class SocialMediaController {
     }
 
     @PatchMapping("messages/{message_id}")
-    public ResponseEntity<Message> patchMessage(@PathVariable Integer message_id, @RequestBody String messageText){
-        Message updatedMessage = messageService.patchMessage(message_id, messageText);
-        return new ResponseEntity<>(updatedMessage, HttpStatus.OK);
+    public ResponseEntity<Integer> patchMessage(@PathVariable Integer message_id, @RequestBody Message message){
+        int result = messageService.patchMessage(message_id, message.getMessageText());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @GetMapping("accounts/{account_id}/messages")
     public ResponseEntity<List<Message>> getMessagesById(@PathVariable Integer account_id){
         List<Message> messagesOfAccount = messageService.getMessagesById(account_id);
-        return  ResponseEntity.status(HttpStatus.OK).body(messagesOfAccount);
+        return ResponseEntity.status(HttpStatus.OK).body(messagesOfAccount);
     }
 
     @ExceptionHandler(AuthenticationException.class)

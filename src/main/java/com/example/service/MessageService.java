@@ -31,17 +31,9 @@ public class MessageService {
         return (List<Message>) messageRepository.findAll();
     }
 
-    public Message getMessageById(Integer message_id){
+    public Optional<Message> getMessageById(Integer message_id){
         Optional<Message> optionalMessage = messageRepository.findById(message_id);
-        if (optionalMessage.isPresent()){
-
-            Message message = optionalMessage.get();
-            return message;
-            }
-        else{
-            Message message = new Message();
-            return message;
-        }
+        return optionalMessage;
     }
 
     public Message addMessage(Message message) throws ResourceNotFoundException{
@@ -69,14 +61,14 @@ public class MessageService {
         }
     }
 
-    public Message patchMessage(Integer message_id, String message_contents)throws ResourceNotFoundException{
+    public Integer patchMessage(Integer message_id, String message_contents)throws ResourceNotFoundException{
         Message message = messageRepository.findById(message_id)
         .orElseThrow(() -> new ResourceNotFoundException(message_id + " was not found. Please try another message ID."));
         if (message_contents.length() > 255 || message_contents.length() < 1) throw new ResourceNotFoundException(message_contents + " is not a valid message to post!");
         message.setMessageText(message_contents);
         messageRepository.save(message);
 
-        return messageRepository.getById(message_id);
+        return 1;
     }
 
 }

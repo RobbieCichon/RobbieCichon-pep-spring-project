@@ -9,6 +9,7 @@ import com.example.repository.AccountRepository;
 import com.example.entity.Account;
 import com.example.exception.*;
 
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,35 +26,37 @@ public class AccountService {
 
     public Account registerAccount(Account account) throws DuplicateUsernameException, ResourceNotFoundException{
         if (account.getUsername().length() > 0 && account.getPassword().length() > 3){
-            List<Account> accounts = getAccountList();
-            for (Account currentAccounts:accounts){
-                if (currentAccounts.getUsername().equals(account.getUsername())){
+            Optional<Account> optionalAccount = accountRepository.findByUsername(account.getUsername());
+            if (optionalAccount.isPresent()){
                     throw new DuplicateUsernameException(account.getUsername() + " already exists, try a different one.");
-                }
             }
         }
         else throw new ResourceNotFoundException("Invalid username and/or password specifications, try a different one.");
 
-        accountList.add(account);
-        return account;
+        Account savedAccount = accountRepository.save(account);
+        return savedAccount;
     }
 
-    public List<Account> getAccountList(){
-        return (List<Account>) accountRepository.findAll();
-    }
 
     public Account loginAccount(Account account) throws AuthenticationException{
-        for(Account knownAccount:accountList){
-            if (knownAccount.getUsername().equals(account.getUsername()) && knownAccount.getPassword().equals(account.getPassword())){
-                return account;
-            }
+        Optional<Account> optionalAccount = accountRepository.findByUsernameAndPassword(account.getUsername(), account.getPassword());
+        if (optionalAccount.isPresent()){
+            Account foundAccount = optionalAccount.get();
+            return foundAccount;
         }
-
-        throw new AuthenticationException("Username and password credentials are invalid");
+        else throw new AuthenticationException("Username and password credentials are invalid");
     }
-
+/* 
     public Account getAccountById(Integer account_id) throws ResourceNotFoundException{
-        return accountRepository.findById(account_id)
-        .orElseThrow(() -> new ResourceNotFoundException(account_id + " was not found. Please try another account ID."));
+        Optional<Account> optionalAccount = accountRepository.findById(account_id);
+        if(optionalAccount.isPresent()){
+            return optionalAccount.get();
+        }
+        else{
+            Account account = new Account();
+            return account;
+        }
     }
+    */
 }
+    

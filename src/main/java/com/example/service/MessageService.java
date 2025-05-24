@@ -45,44 +45,38 @@ public class MessageService {
     }
 
     public Message addMessage(Message message) throws ResourceNotFoundException{
-        if (message.getMessageText().length() >= 255 || message.getMessageText() == ""){
+        if (message.getMessageText().length() < 255 && message.getMessageText().length() > 1){
             if (accountRepository.existsById(message.getPostedBy())){
-                messageRepository.save(message);
+                Message savedMessage = messageRepository.save(message);
+                return savedMessage;
             }
         }
-        
-        return message;
+        throw new ResourceNotFoundException("Error creating message, either invalid message text or account ID not found");
     }
 
     public List<Message> getMessagesById(Integer account_id){
-        List<Message> messages = getMessageList();
-        List<Message> matchMessages = new ArrayList<>();
-        for (Message message:messages){
-            if (message.getPostedBy().equals(account_id)){
-                matchMessages.add(message);
-            }
-        }
-        return matchMessages;
+        return messageRepository.findByPostedBy(account_id);
     }
 
-    public Message deleteMessage(Integer message_id){
+    public int deleteMessage(Integer message_id){
         Optional<Message> optionalMessage = messageRepository.findById(message_id);
         if(optionalMessage.isPresent()){
-            Message message = optionalMessage.get();
             messageRepository.deleteById(message_id);
-            return message;
+            return 1;
         }
         else{
-            Message message = new Message();
-            return message;
+            return 0;
         }
     }
 
     public Message patchMessage(Integer message_id, String message_contents)throws ResourceNotFoundException{
         Message message = messageRepository.findById(message_id)
         .orElseThrow(() -> new ResourceNotFoundException(message_id + " was not found. Please try another message ID."));
+        if (message_contents.length() > 255 || message_contents.length() < 1) throw new ResourceNotFoundException(message_contents + " is not a valid message to post!");
         message.setMessageText(message_contents);
-        return message;
+        messageRepository.save(message);
+
+        return messageRepository.getById(message_id);
     }
 
 }

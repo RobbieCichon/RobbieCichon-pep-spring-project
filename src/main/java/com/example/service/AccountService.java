@@ -21,7 +21,7 @@ public class AccountService {
 
     @Autowired
     public AccountService(AccountRepository accountRepository){
-        accountRepository = this.accountRepository;
+        this.accountRepository = accountRepository;
     }
 
     public Account registerAccount(Account account) throws DuplicateUsernameException, ResourceNotFoundException{
@@ -34,7 +34,7 @@ public class AccountService {
         else throw new ResourceNotFoundException("Invalid username and/or password specifications, try a different one.");
 
         Account savedAccount = accountRepository.save(account);
-        return savedAccount;
+        return accountRepository.getById(savedAccount.getAccountId());
     }
 
 

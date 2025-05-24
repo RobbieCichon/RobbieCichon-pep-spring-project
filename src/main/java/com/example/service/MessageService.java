@@ -23,8 +23,8 @@ public class MessageService {
 
     @Autowired
     public MessageService(MessageRepository messageRepository, AccountRepository accountRepository){
-        messageRepository = this.messageRepository;
-        accountRepository = this.accountRepository;
+        this.messageRepository = messageRepository;
+        this.accountRepository = accountRepository;
     }
 
     public List<Message> getMessageList(){

@@ -1,10 +1,7 @@
 package com.example.service;
 
-import java.util.List;
-
 import javax.naming.AuthenticationException;
 
-import java.util.ArrayList;
 import com.example.repository.AccountRepository;
 import com.example.entity.Account;
 import com.example.exception.*;
@@ -12,7 +9,6 @@ import com.example.exception.*;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AccountService {
@@ -24,6 +20,13 @@ public class AccountService {
         this.accountRepository = accountRepository;
     }
 
+    /**
+     * Service Layer level of registering account. Ensures username/password fulfills given parameters and throws appropiate exceptions if not.
+     * @param account Account object to be persisted into the Account repository if successful.
+     * @return the newly persisted account, now retrieved from the repository with its new ID.
+     * @throws DuplicateUsernameException If given username already exists in the Account repository.
+     * @throws ResourceNotFoundException If given username is blank or given password is less than 4 characters.
+     */
     public Account registerAccount(Account account) throws DuplicateUsernameException, ResourceNotFoundException{
         if (account.getUsername().length() > 0 && account.getPassword().length() > 3){
             Optional<Account> optionalAccount = accountRepository.findByUsername(account.getUsername());
@@ -37,7 +40,13 @@ public class AccountService {
         return accountRepository.getById(savedAccount.getAccountId());
     }
 
-
+    /**
+     * Service layer level of attempting to log into an account with given username and password. 
+     * Checks with Account repository using custom query to avoid looping through all existing accounts. 
+     * @param account Account object containing the username/password to be checked.
+     * @return Account object if a match is found, otherwise throws exception.
+     * @throws AuthenticationException If no matching account is found with the given username/password.
+     */
     public Account loginAccount(Account account) throws AuthenticationException{
         Optional<Account> optionalAccount = accountRepository.findByUsernameAndPassword(account.getUsername(), account.getPassword());
         if (optionalAccount.isPresent()){
@@ -46,17 +55,5 @@ public class AccountService {
         }
         else throw new AuthenticationException("Username and password credentials are invalid");
     }
-/* 
-    public Account getAccountById(Integer account_id) throws ResourceNotFoundException{
-        Optional<Account> optionalAccount = accountRepository.findById(account_id);
-        if(optionalAccount.isPresent()){
-            return optionalAccount.get();
-        }
-        else{
-            Account account = new Account();
-            return account;
-        }
-    }
-    */
 }
     
